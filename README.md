@@ -31,10 +31,10 @@ ssh -i путь_до_файла_с_SSH_ключом/название_файла_
 Далее нужно ввести пароль от закрытого SSH-ключа (passphrase)
 # Запуск backend
 ```
-git clone https://github.com/Ingv4r/api_yamdb
+git clone git@github.com:Ingv4r/infra_sprint1.git
 ```
 ```
-cd api_yamdb
+cd infra_sprint
 ```
 - Cоздать и активировать виртуальное окружение
 ```
