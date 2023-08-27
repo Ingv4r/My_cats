@@ -84,3 +84,84 @@ sudo apt-get install -y nodejs
 cd taski/frontend
 npm i
 ```
+## Запуск фронта
+```
+npm run start
+```
+# Установка и запуск WSGI-сервера Gunicorn
+Из виртуального окружения backend проекта выполнить устновка gunicorn
+```
+pip install gunicorn==20.1.0
+```
+## Создание юнита gunicorn
+Создать и открыть через nano файл .service
+```
+sudo nano /etc/systemd/system/gunicorn.service 
+```
+Описать конфигурацию gunicorn
+```
+[Unit]
+Description=gunicorn daemon 
+
+# Условие: при старте операционной системы запускать процесс только после того, 
+# как операционная система загрузится и настроит подключение к сети.
+# Ссылка на документацию с возможными вариантами значений 
+# https://systemd.io/NETWORK_ONLINE/
+After=network.target 
+
+[Service]
+# От чьего имени будет происходить запуск:
+# укажите имя, под которым вы подключались к серверу.
+User=yc-user 
+
+# Путь к директории проекта:
+# /home/<имя-пользователя-в-системе>/
+# <директория-с-проектом>/<директория-с-файлом-manage.py>/.
+# Например:
+WorkingDirectory=/home/yc-user/taski/backend/
+
+# Команду, которую вы запускали руками, теперь будет запускать systemd:
+# /home/<имя-пользователя-в-системе>/
+# <директория-с-проектом>/<путь-до-gunicorn-в-виртуальном-окружении> --bind 0.0.0.0:8000 backend.wsgi
+ExecStart=/home/yc-user/taski/backend/venv/bin/gunicorn --bind 0.0.0.0:8000 backend.wsgi
+
+[Install]
+# В этом параметре указывается вариант запуска процесса.
+# Значение <multi-user.target> указывают, чтобы systemd запустил процесс,
+# доступный всем пользователям и без графического интерфейса.
+WantedBy=multi-user.target
+```
+Запуск и добавление в автозагрузку gunicorn
+```
+sudo systemctl start gunicorn
+sudo systemctl enable gunicorn
+```
+# Установка и настройка веб-сервера Nginx
+Установка Nginx на удаленный сервер
+```
+sudo apt install nginx -y
+```
+Открытие портов 80 и 442 для Nginx и 22 порт для SSH
+```
+sudo ufw allow 'Nginx Full'
+sudo ufw allow OpenSSH
+```
+Активация ufv файрвола
+```
+sudo ufw enable
+```
+## Настройка Nginx
+Перейти в директорию taski/frontend и выполните команду:
+```
+npm run build
+```
+Скопировать папку /frontend/build/ в системную директорию Nginx /var/www/
+```
+# Команда cp — копировать, ключ -r — рекурсивно, включая вложенные папки и файлы.
+sudo cp -r /home/yc-user/taski/frontend/build/. /var/www/taski/ 
+# Точка после build важна — будет скопировано содержимое директории.
+```
+Открыть через nano файл конфигурации Nginx
+```
+sudo nano /etc/nginx/sites-enabled/default
+```
