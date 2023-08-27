@@ -165,3 +165,93 @@ sudo cp -r /home/yc-user/taski/frontend/build/. /var/www/taski/
 ```
 sudo nano /etc/nginx/sites-enabled/default
 ```
+Вставить код из листинга:
+```
+server {
+    server_name ing-taski.ddns.net;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+    }
+
+    location /admin/ {
+        proxy_pass http://127.0.0.1:8000;
+    }
+
+    location / {
+        root   /var/www/taski;
+        index  index.html index.htm;
+        try_files $uri /index.html;
+    }
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/ing-taski.ddns.net/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/ing-taski.ddns.net/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = ing-taski.ddns.net) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    listen 80;
+    server_name 158.160.23.165 ing-taski.ddns.net;
+    return 404; # managed by Certbot
+
+}
+
+server {
+    server_name ing-kittygram.ddns.net;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080;
+        client_max_body_size 20M;
+    }
+
+    location /admin/ {
+        proxy_pass http://127.0.0.1:8080;
+        client_max_body_size 20M;
+    }
+
+    location /media/ {
+        alias /var/www/kittygram/media/;
+    }
+
+    location / {
+        root   /var/www/kittygram;
+        index  index.html index.htm;
+        try_files $uri /index.html;
+    }
+
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/ing-kittygram.ddns.net/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/ing-kittygram.ddns.net/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+server {
+    if ($host = ing-kittygram.ddns.net) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    server_name ing-kittygram.ddns.net;
+    listen 80;
+    return 404; # managed by Certbot
+
+}
+```
+Проверка файла на ошибки
+```
+sudo nginx -t
+```
+Перезагрузить конфигурацию Nginx
+```
+sudo systemctl reload nginx
+```
